@@ -1,0 +1,14 @@
+# --- Core Web Framework & Server ---
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+
+# --- Database ORM & Drivers ---
+sqlmodel>=0.0.16
+
+# --- Data Validation & Settings Management ---
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
+
+# --- Environment & HTTP Utilities ---
+python-dotenv>=1.0.1
+httpx>=0.34.0

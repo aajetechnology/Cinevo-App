@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinevo | Feature Movies</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0F0F11; }
+        .glass-header { background: rgba(15, 15, 17, 0.75); backdrop-filter: blur(16px); }
+        .modal-blur { background: rgba(10, 10, 12, 0.85); backdrop-filter: blur(24px); }
+    </style>
+</head>
+<body class="text-white min-h-screen pb-24">
+
+    <nav class="glass-header sticky top-0 z-40 border-b border-white/10 px-6 md:px-12 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black tracking-widest text-[#D4AF37]">CINEVO</h1>
+            <div class="hidden md:flex items-center space-x-8 text-sm font-semibold tracking-wide">
+                <a href="/" class="text-gray-400 hover:text-white transition duration-200">Home</a>
+                <a href="/movies" class="text-[#D4AF37] transition duration-200">Movies</a>
+                <a href="/series" class="text-gray-400 hover:text-white transition duration-200">Series</a>
+                <a href="/shorts" class="text-gray-400 hover:text-white transition duration-200">Shorts</a>
+            </div>
+            <div class="w-9 h-9 rounded-full bg-[#D4AF37] text-black font-black flex items-center justify-center text-xs shadow-md">EC</div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 md:px-12 mt-10">
+        <header class="mb-10">
+            <h2 class="text-3xl font-black tracking-tight">FEATURE MOVIES</h2>
+            <p class="text-xs text-gray-400 mt-1">Premium long-form storytelling and cinematic African feature releases.</p>
+        </header>
+
+        <div id="movies-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+    </main>
+
+    <!-- CINEMA PLAYER OVERLAY MODAL -->
+    <div id="videoModal" class="modal-blur fixed inset-0 z-50 flex flex-col justify-center items-center p-4 md:p-10 hidden">
+        <div class="absolute top-6 right-6 z-50">
+            <button id="closeModalBtn" class="bg-white/10 hover:bg-white/20 text-white font-bold w-12 h-12 rounded-full flex items-center justify-center text-lg">✕</button>
+        </div>
+        <div class="w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden border border-white/10">
+            <iframe id="modalPlayer" class="w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <div class="w-full max-w-5xl mt-6 px-2">
+            <h3 id="modalMovieTitle" class="text-xl md:text-3xl font-black text-white"></h3>
+            <p id="modalMovieDesc" class="text-gray-400 text-sm mt-2 leading-relaxed"></p>
+        </div>
+    </div>
+
+    <script>
+        const videoModal = document.getElementById('videoModal');
+        const modalPlayer = document.getElementById('modalPlayer');
+        const modalMovieTitle = document.getElementById('modalMovieTitle');
+        const modalMovieDesc = document.getElementById('modalMovieDesc');
+
+        function OpenCinemaTheater(title, description, embedUrl) {
+            let streamTarget = embedUrl;
+            if (streamTarget.includes('youtube.com/embed')) streamTarget += '?autoplay=1';
+            modalPlayer.src = streamTarget;
+            modalMovieTitle.innerText = title;
+            modalMovieDesc.innerText = description;
+            videoModal.classList.remove('hidden');
+        }
+
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            videoModal.classList.add('hidden');
+            modalPlayer.src = "";
+        });
+
+        async function loadMoviesCatalog() {
+            try {
+                const res = await fetch('/api/catalog');
+                const data = await res.json();
+                const moviesGrid = document.getElementById('movies-grid');
+                
+                // Filter down to show ONLY item elements explicitly marked as a "movie" content_type
+                const movies = data.trending_combined_row.filter(item => item.content_type === 'movie');
+                
+                movies.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = "bg-[#15151A] rounded-xl overflow-hidden border border-white/5 hover:border-[#D4AF37]/40 transition duration-300 transform hover:-translate-y-1.5 cursor-pointer flex flex-col";
+                    card.onclick = () => OpenCinemaTheater(item.title, item.description, item.embedded_video_url);
+                    card.innerHTML = `
+                        <img src="${item.poster_url}" class="w-full h-64 object-cover">
+                        <div class="p-5 flex-1 flex flex-col justify-between">
+                            <div>
+                                <h4 class="font-bold text-base text-white truncate">${item.title}</h4>
+                                <p class="text-xs text-gray-400 mt-1 line-clamp-2">${item.description}</p>
+                            </div>
+                            <div class="flex justify-between items-center mt-5 text-[10px] text-[#D4AF37] font-bold uppercase tracking-wider">
+                                <span class="truncate max-w-[130px]">👤 ${item.filmmaker_name}</span>
+                                <span class="bg-white/10 px-2 py-0.5 rounded text-white font-medium">${item.release_year}</span>
+                            </div>
+                        </div>
+                    `;
+                    moviesGrid.appendChild(card);
+                });
+            } catch (err) { console.error(err); }
+        }
+        document.addEventListener('DOMContentLoaded', loadMoviesCatalog);
+    </script>
+</body>
+</html>

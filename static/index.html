@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinevo Engine v2 | Pan-African Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0A0A0C; color: #FFFFFF; overflow-x: hidden; }
+        .glass-header { background: rgba(10, 10, 12, 0.8); backdrop-filter: blur(24px); }
+        .row-scroller::-webkit-scrollbar { display: none; }
+        .row-scroller { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="min-h-screen pb-32">
+
+    <!-- NAVIGATION COMPONENT -->
+    <nav class="glass-header sticky top-0 z-50 border-b border-white/5 px-6 md:px-12 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-black tracking-widest text-[#D4AF37] cursor-pointer animate-pulse" onclick="switchMainView('all')">CINEVO</h1>
+        
+        <div class="hidden md:flex items-center space-x-8 text-xs font-black tracking-widest uppercase">
+            <button onclick="switchMainView('all')" id="nav-all" class="text-[#D4AF37] transition">Discover</button>
+            <button onclick="switchMainView('movies')" id="nav-movies" class="text-gray-400 hover:text-white transition">Movies</button>
+            <button onclick="switchMainView('series')" id="nav-series" class="text-gray-400 hover:text-white transition">Series</button>
+            <button onclick="switchMainView('shorts')" id="nav-shorts" class="text-gray-400 hover:text-white transition">Shorts</button>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <!-- EXPANDABLE SERVER-SIDE ACTION SEARCH INPUT BAR -->
+            <div class="relative flex items-center">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    placeholder="Search titles, countries..." 
+                    class="w-0 opacity-0 transition-all duration-300 ease-in-out bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#D4AF37]/60 focus:w-48 focus:opacity-100"
+                    oninput="handleSearchFilter(this.value)"
+                >
+                <button 
+                    id="search-toggle-btn" 
+                    onclick="toggleSearchField()" 
+                    class="text-gray-400 hover:text-white transition text-sm p-2 bg-white/5 hover:bg-white/10 rounded-lg flex items-center justify-center ml-2"
+                >
+                    🔍
+                </button>
+            </div>
+            
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#D4AF37] to-amber-600 text-black font-black flex items-center justify-center text-xs shadow-md">A</div>
+        </div>
+    </nav>
+
+    <!-- HERO SPLASH COMPONENT -->
+    <header id="hero-banner" class="relative w-full h-[65vh] md:h-[80vh] bg-cover bg-center transition-all duration-700 ease-in-out flex items-end pb-16 md:pb-20 px-6 md:px-12 border-b border-white/5">
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0A0A0C] via-transparent to-black/40"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-[#0A0A0C]/90 via-[#0A0A0C]/30 to-transparent"></div>
+        <div class="relative z-10 max-w-4xl w-full">
+            <span class="text-[10px] font-black tracking-widest text-[#D4AF37] uppercase bg-[#D4AF37]/10 px-3 py-1.5 rounded-md border border-[#D4AF37]/20">TRENDING SPOTLIGHT</span>
+            <h2 id="hero-title" class="text-3xl md:text-6xl font-black tracking-tight mt-4 uppercase leading-none"></h2>
+            <p id="hero-desc" class="text-xs md:text-sm text-gray-300 mt-4 max-w-xl line-clamp-3 leading-relaxed"></p>
+            <div class="flex items-center space-x-4 mt-6">
+                <button id="hero-play-btn" class="bg-gradient-to-r from-[#E5A93C] to-[#B8860B] text-black font-black text-xs px-8 py-3.5 rounded-lg shadow-lg hover:scale-105 transition flex items-center space-x-2"><span>▶ WATCH TRAILER</span></button>
+            </div>
+        </div>
+        <div id="slide-indicators" class="absolute bottom-8 right-6 md:right-12 z-20 flex items-center space-x-2"></div>
+    </header>
+
+    <!-- MAIN DISTRIBUTION MATRICES -->
+    <main class="max-w-7xl mx-auto px-6 md:px-12 mt-12 space-y-12">
+        
+        <!-- DYNAMIC SEARCH RESULTS LANE -->
+        <section id="row-search-results" class="hidden">
+            <div class="flex justify-between items-center mb-6 border-b border-white/5 pb-2">
+                <h3 class="text-sm font-black tracking-widest text-[#D4AF37] uppercase">🔍 Search Results</h3>
+                <button onclick="clearSearchField()" class="text-xs text-gray-400 hover:text-white transition bg-white/5 px-2.5 py-1 rounded-md">Clear Results</button>
+            </div>
+            <div id="grid-search-results" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>
+        </section>
+
+        <!-- STANDARD CONTENT CATEGORY LANES -->
+        <section id="row-popular-movies" class="view-row">
+            <h3 class="text-sm font-black tracking-widest text-gray-400 uppercase mb-4">🔥 Popular Movies</h3>
+            <div id="grid-popular-movies" class="flex space-x-4 overflow-x-auto row-scroller py-2"></div>
+        </section>
+
+        <section id="row-popular-series" class="view-row">
+            <h3 class="text-sm font-black tracking-widest text-gray-400 uppercase mb-4">📺 Popular TV Series</h3>
+            <div id="grid-popular-series" class="flex space-x-4 overflow-x-auto row-scroller py-2"></div>
+        </section>
+
+        <section id="row-animations" class="view-row">
+            <h3 class="text-sm font-black tracking-widest text-[#D4AF37] uppercase mb-4">✨ African Inspired Animations</h3>
+            <div id="grid-animations" class="flex space-x-4 overflow-x-auto row-scroller py-2"></div>
+        </section>
+
+        <section id="row-shorts" class="view-row">
+            <h3 class="text-sm font-black tracking-widest text-gray-400 uppercase mb-4">🎞️ Independent Shorts</h3>
+            <div id="grid-shorts" class="flex space-x-4 overflow-x-auto row-scroller py-2"></div>
+        </section>
+
+        <section id="row-upcoming" class="view-row">
+            <h3 class="text-sm font-black tracking-widest text-gray-400 uppercase mb-4">📅 Upcoming Cinema Releases</h3>
+            <div id="grid-upcoming" class="flex space-x-4 overflow-x-auto row-scroller py-2"></div>
+        </section>
+
+        <section id="row-ng" class="view-row">
+            <h3 class="text-sm font-black tracking-widest text-emerald-500 uppercase mb-4">🇳🇬 Best of Nigeria (Nollywood)</h3>
+            <div id="grid-ng" class="flex space-x-4 overflow-x-auto row-scroller py-2"></div>
+        </section>
+
+        <section id="row-za" class="view-row">
+            <h3 class="text-sm font-black tracking-widest text-blue-400 uppercase mb-4">🇿🇦 Best of South Africa</h3>
+            <div id="grid-za" class="flex space-x-4 overflow-x-auto row-scroller py-2"></div>
+        </section>
+
+        <section id="row-ke" class="view-row">
+            <h3 class="text-sm font-black tracking-widest text-red-500 uppercase mb-4">🇰🇪 Best of Kenya</h3>
+            <div id="grid-ke" class="flex space-x-4 overflow-x-auto row-scroller py-2"></div>
+        </section>
+    </main>
+
+   <!-- GLOBAL OVERLAY VIDEO PLAYER DETAIL MODAL -->
+   <div id="videoModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-12 bg-[#0A0A0C]/98 backdrop-blur-2xl hidden transition-all duration-300">
+        <!-- Close Button -->
+        <button id="closeModalBtn" class="absolute top-6 right-6 z-50 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-bold w-12 h-12 rounded-full flex items-center justify-center transition active:scale-95">✕</button>
+        
+        <!-- Precision Grid Match from ss.jpg -->
+        <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start bg-transparent p-2">
+            
+            <!-- LEFT PANEL: Dynamic Video Content Frame (60% Width Split) -->
+            <div class="lg:col-span-7 w-full aspect-video bg-[#121216] rounded-lg overflow-hidden border border-white/5 shadow-2xl relative">
+                <iframe id="modalPlayer" class="w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+
+            <!-- RIGHT PANEL: Integrated Media Summary Text Block (40% Width Split) -->
+            <div class="lg:col-span-5 flex flex-col justify-start space-y-4 pt-1">
+                <div class="space-y-2">
+                    <h2 id="modal-title" class="text-2xl md:text-4xl font-black tracking-tight text-white uppercase leading-tight">THE SUN OF WAHKNIDON</h2>
+                    
+                    <!-- Dynamic Meta Metadata Tags Line -->
+                    <div class="flex items-center space-x-3 text-[10px] tracking-widest text-[#D4AF37] font-bold uppercase">
+                        <span id="modal-year" class="bg-[#D4AF37]/10 px-2 py-0.5 rounded border border-[#D4AF37]/20">2026</span>
+                        <span class="bg-white/5 px-2 py-0.5 rounded border border-white/10 text-white">HD</span>
+                        <span class="text-gray-400">Audio: Stereo 2.0</span>
+                    </div>
+                </div>
+                
+                <!-- Description constraints match the spacing density in ss.jpg -->
+                <p id="modal-desc" class="text-xs text-gray-400 leading-relaxed max-h-[140px] overflow-y-auto pr-2 row-scroller font-medium">
+                    Terrance the African film dynamic worker active the system logic. More description parameters text logs trace structural metadata logs smoothly here.
+                </p>
+
+                <!-- Clean, minimal crew detail logging alignment -->
+                <div class="pt-3 border-t border-white/5 text-[11px] text-gray-500 font-medium">
+                    Director: <span id="modal-director" class="text-gray-300 ml-1">Sdlon Roslen</span>
+                </div>
+                
+                <!-- Action trigger row layout with bolder, expanded text -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+                    <button class="flex-1 bg-gradient-to-r from-[#E5A93C] to-[#B8860B] hover:opacity-90 text-black font-black text-xs py-4 px-6 rounded-lg shadow-xl transition transform hover:scale-[1.01] active:scale-95 flex items-center justify-center space-x-3">
+                        <span class="text-sm">▶</span>
+                        <span class="font-black tracking-[0.18em]">WATCH TRAILER NOW</span>
+                    </button>
+                    <button class="bg-white/5 hover:bg-white/10 text-white font-black text-xs tracking-wider uppercase py-4 px-5 rounded-lg border border-white/10 transition active:scale-95">
+                        + Add to List
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script>
+        let slideshowItems = [];
+        let currentSlideIndex = 0;
+        let slideshowInterval = null;
+        let searchDebounceTimer = null;
+
+        function switchMainView(filter) {
+            // Cancel search overlays if moving manually between structural layers
+            if (filter !== 'search') {
+                document.getElementById('search-input').value = "";
+                document.getElementById('row-search-results').classList.add('hidden');
+                document.getElementById('hero-banner').classList.remove('hidden');
+            }
+
+            // Update Navigation Highlighting
+            document.querySelectorAll('nav button').forEach(btn => btn.className = 'text-gray-400 hover:text-white transition');
+            const targetNav = document.getElementById(`nav-${filter}`);
+            if (targetNav) targetNav.className = 'text-[#D4AF37] font-black transition';
+
+            // Show or hide relevant row categories matching the layout filter
+            document.querySelectorAll('.view-row').forEach(row => {
+                if (filter === 'all') row.style.display = 'block';
+                else if (filter === 'movies') row.style.display = (row.id === 'row-popular-movies' || row.id === 'row-upcoming' || row.id === 'row-ng' || row.id === 'row-za' || row.id === 'row-ke') ? 'block' : 'none';
+                else if (filter === 'series') row.style.display = (row.id === 'row-popular-series' || row.id === 'row-animations') ? 'block' : 'none';
+                else if (filter === 'shorts') row.style.display = (row.id === 'row-shorts') ? 'block' : 'none';
+            });
+        }
+
+        function renderHeroSlide(index) {
+            if (!slideshowItems.length) return;
+            const item = slideshowItems[index];
+            const banner = document.getElementById('hero-banner');
+            banner.style.backgroundImage = `url('${item.backdrop_url}')`;
+            document.getElementById('hero-title').innerText = item.title;
+            document.getElementById('hero-desc').innerText = item.description;
+
+            document.getElementById('hero-play-btn').onclick = () => {
+                launchVideoPortal(item.embedded_video_url);
+            };
+
+            const indicators = document.getElementById('slide-indicators').children;
+            for (let i = 0; i < indicators.length; i++) {
+                indicators[i].className = (i === index) ? "w-8 h-1 bg-[#D4AF37] rounded transition-all" : "w-3 h-1 bg-white/20 rounded cursor-pointer transition-all";
+            }
+        }
+
+        function setupSlideshow(slides) {
+            slideshowItems = slides;
+            const container = document.getElementById('slide-indicators');
+            container.innerHTML = '';
+            slides.forEach((_, idx) => {
+                const dash = document.createElement('div');
+                dash.onclick = () => { currentSlideIndex = idx; renderHeroSlide(idx); };
+                container.appendChild(dash);
+            });
+            renderHeroSlide(0);
+            if (slideshowInterval) clearInterval(slideshowInterval);
+            slideshowInterval = setInterval(() => {
+                currentSlideIndex = (currentSlideIndex + 1) % slideshowItems.length;
+                renderHeroSlide(currentSlideIndex);
+            }, 6000);
+        }
+
+        function generateCard(item) {
+            const node = document.createElement('div');
+            node.className = "min-w-[160px] md:min-w-[210px] bg-[#121216] rounded-xl overflow-hidden border border-white/5 hover:border-[#D4AF37]/30 transition transform hover:-translate-y-1 flex flex-col cursor-pointer";
+            node.onclick = () => {
+                launchVideoPortal(item.embedded_video_url);
+            };
+            node.innerHTML = `
+                <div class="relative aspect-[2/3] w-full bg-neutral-900"><img src="${item.poster_url}" class="w-full h-full object-cover" loading="lazy"></div>
+                <div class="p-3 flex-1 flex flex-col justify-between">
+                    <h4 class="font-bold text-xs truncate text-white">${item.title}</h4>
+                    <div class="flex justify-between text-[10px] text-gray-400 mt-2">
+                        <span>${item.release_year}</span>
+                        <span class="bg-white/5 px-1 py-0.5 rounded text-white font-bold text-[8px]">HD</span>
+                    </div>
+                </div>
+            `;
+            return node;
+        }
+
+
+        // --- UPGRADED PORTAL ACTION ENGINE ---
+        function launchVideoPortal(item) {
+            // Safely verify if item object parameter architecture exists
+            if (!item) return;
+
+            const videoUrl = item.embedded_video_url || "https://www.youtube.com/embed/dQw4w9WgXcQ";
+            const cleanUrl = videoUrl.includes('?') ? `${videoUrl}&autoplay=1` : `${videoUrl}?autoplay=1`;
+            
+            // Hydrate Media Player Container
+            document.getElementById('modalPlayer').src = cleanUrl;
+            
+            // Hydrate Contextual Presentation Panels
+            document.getElementById('modal-title').innerText = (item.title || "Untitled Project").toUpperCase();
+            document.getElementById('modal-desc').innerText = item.description || "No catalog distribution logs configured yet for this presentation lane.";
+            document.getElementById('modal-director').innerText = item.filmmaker_name || "African Cinema Network";
+            document.getElementById('modal-year').innerText = item.release_year || "2026";
+            
+            // Remove hidden state class to expose view portal
+            document.getElementById('videoModal').classList.remove('hidden');
+        }
+
+        // --- UPDATE GENERATE CARD EVENT REGISTRATION ---
+        function generateCard(item) {
+            const node = document.createElement('div');
+            node.className = "min-w-[160px] md:min-w-[210px] bg-[#121216] rounded-xl overflow-hidden border border-white/5 hover:border-[#D4AF37]/30 transition transform hover:-translate-y-1 flex flex-col cursor-pointer";
+            
+            // Pass the entire structured item data matrix here
+            node.onclick = () => {
+                launchVideoPortal(item);
+            };
+            
+            node.innerHTML = `
+                <div class="relative aspect-[2/3] w-full bg-neutral-900">
+                    <img src="${item.poster_url}" class="w-full h-full object-cover" loading="lazy">
+                </div>
+                <div class="p-3 flex-1 flex flex-col justify-between">
+                    <h4 class="font-bold text-xs truncate text-white">${item.title}</h4>
+                    <div class="flex justify-between text-[10px] text-gray-400 mt-2">
+                        <span>${item.release_year}</span>
+                        <span class="bg-white/5 px-1 py-0.5 rounded text-white font-bold text-[8px]">HD</span>
+                    </div>
+                </div>
+            `;
+            return node;
+        }
+
+        // --- UPDATE HERO SLIDE EVENT REGISTRATION ---
+        function renderHeroSlide(index) {
+            if (!slideshowItems.length) return;
+            const item = slideshowItems[index];
+            const banner = document.getElementById('hero-banner');
+            banner.style.backgroundImage = `url('${item.backdrop_url}')`;
+            document.getElementById('hero-title').innerText = item.title;
+            document.getElementById('hero-desc').innerText = item.description;
+
+            // Wire up hero play button to use the new unified portal configuration layout
+            document.getElementById('hero-play-btn').onclick = () => {
+                launchVideoPortal(item);
+            };
+
+            const indicators = document.getElementById('slide-indicators').children;
+            for (let i = 0; i < indicators.length; i++) {
+                indicators[i].className = (i === index) ? "w-8 h-1 bg-[#D4AF37] rounded transition-all" : "w-3 h-1 bg-white/20 rounded cursor-pointer transition-all";
+            }
+        }
+
+        function toggleSearchField() {
+            const searchInput = document.getElementById('search-input');
+            if (searchInput.classList.contains('w-0')) {
+                searchInput.classList.remove('w-0', 'opacity-0');
+                searchInput.classList.add('w-48', 'opacity-100', 'px-3');
+                searchInput.focus();
+            } else {
+                if (searchInput.value.trim() === "") {
+                    searchInput.classList.remove('w-48', 'opacity-100', 'px-3');
+                    searchInput.classList.add('w-0', 'opacity-0');
+                    clearSearchField();
+                } else {
+                    executeLiveSearch(searchInput.value);
+                }
+            }
+        }
+
+        // Listen for keyboard Enter execution
+        document.getElementById('search-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                executeLiveSearch(e.target.value);
+            }
+        });
+
+        // Dynamic typing input debouncer matrix (triggers search after 600ms pause)
+        function handleSearchFilter(value) {
+            clearTimeout(searchDebounceTimer);
+            if (value.trim() === "") {
+                clearSearchField();
+                return;
+            }
+            searchDebounceTimer = setTimeout(() => {
+                executeLiveSearch(value);
+            }, 600);
+        }
+
+        async function executeLiveSearch(query) {
+            if (!query || query.trim() === "") return;
+            
+            try {
+                const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
+                const data = await res.json();
+                
+                const searchRow = document.getElementById('row-search-results');
+                const searchGrid = document.getElementById('grid-search-results');
+                
+                searchGrid.innerHTML = '';
+                
+                if (data.results && data.results.length > 0) {
+                    data.results.forEach(item => {
+                        searchGrid.appendChild(generateCard(item));
+                    });
+                } else {
+                    searchGrid.innerHTML = `<p class="text-xs text-gray-500 py-4 col-span-full pl-2">No cinematic matches found across local files or regional networks for "${query}".</p>`;
+                }
+                
+                // Hide standard landing lanes out of focus
+                document.querySelectorAll('.view-row').forEach(row => row.classList.add('hidden'));
+                document.getElementById('hero-banner').classList.add('hidden');
+                
+                // Expose active query lane grid
+                searchRow.classList.remove('hidden');
+                
+                // De-highlight general exploration links
+                document.querySelectorAll('nav button').forEach(btn => btn.className = 'text-gray-400 hover:text-white transition');
+            } catch (err) {
+                console.error("Core Search Engine failure:", err);
+            }
+        }
+
+        function clearSearchField() {
+            document.getElementById('search-input').value = "";
+            document.getElementById('row-search-results').classList.add('hidden');
+            document.getElementById('grid-search-results').innerHTML = '';
+            
+            document.getElementById('hero-banner').classList.remove('hidden');
+            document.querySelectorAll('.view-row').forEach(row => row.classList.remove('hidden'));
+            switchMainView('all');
+        }
+        
+        // --- DATA STREAM HYDRATION MATRIX ---
+        async function loadEngine() {
+            try {
+                const res = await fetch('/api/catalog');
+                const data = await res.json();
+
+                if (data.banner_slideshow?.length) setupSlideshow(data.banner_slideshow);
+
+                const renderLane = (laneId, array) => {
+                    const target = document.getElementById(laneId);
+                    target.innerHTML = '';
+                    if(array && array.length > 0) {
+                        array.forEach(item => target.appendChild(generateCard(item)));
+                    } else {
+                        target.innerHTML = `<p class="text-xs text-gray-500 py-4 font-medium pl-2">No active distribution updates inside this regional catalog lane.</p>`;
+                    }
+                };
+
+                renderLane('grid-popular-movies', data.popular_movies);
+                renderLane('grid-popular-series', data.popular_series);
+                renderLane('grid-animations', data.african_animations);
+                renderLane('grid-shorts', data.african_shorts_row);
+                renderLane('grid-upcoming', data.upcoming_cinema);
+                renderLane('grid-ng', data.best_of_nigeria);
+                renderLane('grid-za', data.best_of_south_africa);
+                renderLane('grid-ke', data.best_of_kenya);
+
+            } catch (err) { console.error("Hydration runtime failure:", err); }
+        }
+
+        document.getElementById('closeModalBtn').onclick = () => {
+            document.getElementById('videoModal').classList.add('hidden');
+            document.getElementById('modalPlayer').src = "";
+        };
+
+        document.addEventListener('DOMContentLoaded', loadEngine);
+    </script>
+</body>
+</html>

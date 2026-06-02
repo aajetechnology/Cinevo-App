@@ -1,0 +1,61 @@
+.env/# ====================================================================
+# CINEVO PROJECT .GITIGNORE SHEET
+# ====================================================================
+
+# --- Python Environment & Dependencies ---
+.venv/
+venv/
+ENV/
+env/
+Active.activate
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.toast
+.spyderproject
+.spyproject
+.ropeproject
+toml-sort.toml
+
+# --- Frontend Node Modules (Just in case you use builders later) ---
+node_modules/
+/npm-debug.log*
+/yarn-error.log*
+/yarn-debug.log*
+
+# --- Environment Configuration & Sensitive Keys ---
+.env
+.env.[a-zA-Z]*
+!.env.example
+secrets.json
+
+# --- Operating System Artifacts ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# --- Database & Cache Stores ---
+*.db
+*.sqlite
+*.sqlite3
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- IDEs & Text Editors Configuration ---
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp

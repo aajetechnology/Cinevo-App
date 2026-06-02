@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinevo | Production Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0F0F11; }
+        .input-field { background-color: #15151A; border: 1px solid rgba(255,255,255,0.1); color: white; }
+        .input-field:focus { border-color: #D4AF37; outline: none; }
+    </style>
+</head>
+<body class="text-white min-h-screen p-6 md:p-12">
+
+    <header class="max-w-4xl mx-auto flex justify-between items-center mb-10 border-b border-white/10 pb-6">
+        <div>
+            <h1 class="text-2xl font-black tracking-widest text-[#D4AF37]">CINEVO CONTROL PANEL</h1>
+            <p class="text-xs text-gray-400 mt-1">Direct upload engine synchronized to SQLite production tables.</p>
+        </div>
+        <a href="/" class="text-xs bg-white/10 hover:bg-white/20 px-4 py-2 rounded font-semibold transition">View Platform Dashboard →</a>
+    </header>
+
+    <main class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <section class="bg-[#121216] border border-white/5 rounded-xl p-6 shadow-xl">
+            <h2 class="text-lg font-bold text-[#D4AF37] mb-4 flex items-center">🎬 Publish Video Asset</h2>
+            <form id="contentForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Asset Title</label>
+                    <input type="text" id="title" class="w-full p-2.5 rounded text-sm input-field" placeholder="e.g., The Rise of the Gods" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Cinematic Description</label>
+                    <textarea id="description" rows="3" class="w-full p-2.5 rounded text-sm input-field" placeholder="Provide logline or summary..." required></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Distribution Type</label>
+                        <select id="content_type" class="w-full p-2.5 rounded text-sm input-field">
+                            <option value="movie">Feature Movie</option>
+                            <option value="short">Short Film Reel</option>
+                            <option value="episode">Series Episode</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Release Year</label>
+                        <input type="number" id="release_year" class="w-full p-2.5 rounded text-sm input-field" value="2026" required>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Duration (Mins)</label>
+                        <input type="number" id="duration_minute" class="w-full p-2.5 rounded text-sm input-field" value="120" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Filmmaker / Studio</label>
+                        <input type="text" id="filmmaker_name" class="w-full p-2.5 rounded text-sm input-field" placeholder="Aaje Animation Studio" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Playback Embed URL</label>
+                    <input type="url" id="embedded_video_url" class="w-full p-2.5 rounded text-sm input-field" placeholder="https://www.youtube.com/embed/..." required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Vertical Poster Image URL</label>
+                    <input type="url" id="poster_url" class="w-full p-2.5 rounded text-sm input-field" placeholder="https://..." required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Widescreen Backdrop URL</label>
+                    <input type="url" id="backdrop_url" class="w-full p-2.5 rounded text-sm input-field" placeholder="https://..." required>
+                </div>
+                <div class="flex items-center space-x-3 pt-2">
+                    <input type="checkbox" id="is_featured" class="w-4 h-4 accent-[#D4AF37] bg-[#15151A] rounded border-white/10">
+                    <label for="is_featured" class="text-xs font-bold text-[#D4AF37] uppercase tracking-wider cursor-pointer">Promote to Main Spotlight Banner</label>
+                </div>
+                <button type="submit" class="w-full bg-[#D4AF37] hover:bg-[#b8962e] text-black font-bold py-3 px-4 rounded transition tracking-wide text-sm shadow-lg pt-3">
+                    Upload to Core Catalog
+                </button>
+            </form>
+        </section>
+
+        <section class="space-y-6">
+            <div class="bg-[#121216] border border-white/5 rounded-xl p-6 shadow-xl">
+                <h2 class="text-lg font-bold text-[#D4AF37] mb-4 flex items-center">🎨 Initialize Series Franchise</h2>
+                <form id="seriesForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Series Title</label>
+                        <input type="text" id="series_title" class="w-full p-2.5 rounded text-sm input-field" placeholder="e.g., The Rise of the Gods: Chronicles" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Franchise Concept Description</label>
+                        <textarea id="series_description" rows="3" class="w-full p-2.5 rounded text-sm input-field" placeholder="Describe episodic progression arc..." required></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Production Studio</label>
+                            <input type="text" id="series_studio" class="w-full p-2.5 rounded text-sm input-field" placeholder="Aaje Animation Studio" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Launch Year</label>
+                            <input type="number" id="series_year" class="w-full p-2.5 rounded text-sm input-field" value="2026" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Series Poster URL (Vertical)</label>
+                        <input type="url" id="series_poster" class="w-full p-2.5 rounded text-sm input-field" placeholder="https://..." required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Series Backdrop URL (Wide)</label>
+                        <input type="url" id="series_backdrop" class="w-full p-2.5 rounded text-sm input-field" placeholder="https://..." required>
+                    </div>
+                    <button type="submit" class="w-full bg-white text-black hover:bg-gray-200 font-bold py-3 px-4 rounded transition tracking-wide text-sm shadow-lg">
+                        Instantiate Series Container
+                    </button>
+                </form>
+            </div>
+
+            <div id="statusAlert" class="hidden p-4 rounded-xl border text-center font-semibold text-xs tracking-wide transition duration-300"></div>
+        </section>
+    </main>
+
+    <script>
+        const statusAlert = document.getElementById('statusAlert');
+
+        function triggerAlert(message, isSuccess) {
+            statusAlert.innerText = message;
+            statusAlert.className = `p-4 rounded-xl border text-center font-semibold text-xs tracking-wide shadow-xl ${
+                isSuccess ? 'bg-green-500/10 border-green-500/40 text-green-400' : 'bg-red-500/10 border-red-500/40 text-red-400'
+            }`;
+            statusAlert.classList.remove('hidden');
+            setTimeout(() => statusAlert.classList.add('hidden'), 5000);
+        }
+
+        // Handler A: Submit Video Content Item
+        document.getElementById('contentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                content_type: document.getElementById('content_type').value,
+                release_year: parseInt(document.getElementById('release_year').value),
+                duration_minute: parseInt(document.getElementById('duration_minute').value),
+                filmmaker_name: document.getElementById('filmmaker_name').value,
+                embedded_video_url: document.getElementById('embedded_video_url').value,
+                poster_url: document.getElementById('poster_url').value,
+                backdrop_url: document.getElementById('backdrop_url').value,
+                is_featured: document.getElementById('is_featured').checked
+            };
+
+            try {
+                const res = await fetch('/api/admin/upload-content', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    triggerAlert(`🎉 Native Content "${payload.title}" embedded into database successfully!`, true);
+                    document.getElementById('contentForm').reset();
+                } else {
+                    throw new Error("Validation rejection from FastAPI server structure.");
+                }
+            } catch (err) {
+                triggerAlert(`❌ Upload Failed: ${err.message}`, false);
+            }
+        });
+
+        // Handler B: Submit Parent Series Profile
+        document.getElementById('seriesForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                title: document.getElementById('series_title').value,
+                description: document.getElementById('series_description').value,
+                studio_name: document.getElementById('series_studio').value,
+                release_year: parseInt(document.getElementById('series_year').value),
+                poster_url: document.getElementById('series_poster').value,
+                backdrop_url: document.getElementById('series_backdrop').value
+            };
+
+            try {
+                const res = await fetch('/api/admin/create-series', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    triggerAlert(`🎨 Series Franchise "${payload.title}" created successfully!`, true);
+                    document.getElementById('seriesForm').reset();
+                } else {
+                    throw new Error("Validation failure on incoming relational schema rules.");
+                }
+            } catch (err) {
+                triggerAlert(`❌ Series Creation Failed: ${err.message}`, false);
+            }
+        });
+    </script>
+</body>
+</html>

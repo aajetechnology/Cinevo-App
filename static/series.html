@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinevo | Studio Series</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0F0F11; }
+        .glass-header { background: rgba(15, 15, 17, 0.75); backdrop-filter: blur(16px); }
+    </style>
+</head>
+<body class="text-white min-h-screen pb-24">
+
+    <nav class="glass-header sticky top-0 z-40 border-b border-white/10 px-6 md:px-12 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black tracking-widest text-[#D4AF37]">CINEVO</h1>
+            <div class="hidden md:flex items-center space-x-8 text-sm font-semibold tracking-wide">
+                <a href="/" class="text-gray-400 hover:text-white transition duration-200">Home</a>
+                <a href="/movies" class="text-gray-400 hover:text-white transition duration-200">Movies</a>
+                <a href="/series" class="text-[#D4AF37] transition duration-200">Series</a>
+                <a href="/shorts" class="text-gray-400 hover:text-white transition duration-200">Shorts</a>
+            </div>
+            <div class="w-9 h-9 rounded-full bg-[#D4AF37] text-black font-black flex items-center justify-center text-xs shadow-md">EC</div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 md:px-12 mt-10">
+        <header class="mb-10">
+            <h2 class="text-3xl font-black tracking-tight">STUDIO SERIES</h2>
+            <p class="text-xs text-gray-400 mt-1">Episodic series, animation sagas, and continuous folklore franchises.</p>
+        </header>
+
+        <div id="series-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+    </main>
+
+    <script>
+        async function loadSeriesCatalog() {
+            try {
+                const res = await fetch('/api/catalog');
+                const data = await res.json();
+                const seriesGrid = document.getElementById('series-grid');
+
+                if (data.native_series_row) {
+                    data.native_series_row.forEach(series => {
+                        const card = document.createElement('div');
+                        card.className = "bg-[#15151A] rounded-xl overflow-hidden border border-white/5 hover:border-[#D4AF37]/40 transition duration-300 transform hover:-translate-y-1.5 cursor-pointer flex flex-col";
+                        card.innerHTML = `
+                            <img src="${series.poster_url}" class="w-full h-64 object-cover">
+                            <div class="p-5 flex-1 flex flex-col justify-between">
+                                <div>
+                                    <h4 class="font-bold text-base text-white truncate">${series.title}</h4>
+                                    <p class="text-xs text-gray-400 mt-1 line-clamp-2">${series.description}</p>
+                                </div>
+                                <div class="flex justify-between items-center mt-5 text-[10px] text-[#D4AF37] font-bold uppercase tracking-wider">
+                                    <span>🎨 ${series.studio_name}</span>
+                                    <span class="bg-white/10 px-2 py-0.5 rounded text-white font-medium">${series.release_year}</span>
+                                </div>
+                            </div>
+                        `;
+                        seriesGrid.appendChild(card);
+                    });
+                }
+            } catch (err) { console.error(err); }
+        }
+        document.addEventListener('DOMContentLoaded', loadSeriesCatalog);
+    </script>
+</body>
+</html>
